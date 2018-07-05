@@ -15,26 +15,24 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function MultiCometFade(ax,steps,numseg,varargin)
-
-% modify these parameters
+%% modify these parameters
 VIDEO = 'on';
 VIDEO = 'off'; %comment out to turn video on
 % frames per sec in video
 FRAMES_PER_SEC = 25;
-% Number of trajectories to plot
-NUMTRAJ = nargin-3; % 3 is for the first three arguments
-% Length of Trajecties
-LENTRAJ = length(varargin{1}(1,:)); % 3 is for the first three arguments
 % Length of comet tail
 TAILLENGTH = 40;
+%%
+% Number of trajectories to plot
+numTraj = nargin-3; % 3 is for the first three arguments
+% Length of Trajecties
+lenTraj = length(varargin{1}(1,:)); 
 
 if strcmp(VIDEO,'on')
     writerObj = VideoWriter('out.avi'); % Name it.
     writerObj.FrameRate = FRAMES_PER_SEC; % How many frames per second.
     open(writerObj);
 end
-%delete(findobj(gca, 'Tag', 'recent'));
-%delete(findobj(gca, 'Tag', 'head'));
 
 color = [0 0 0; %black
          0 0 1; %blue
@@ -43,38 +41,37 @@ color = [0 0 0; %black
          0 1 1; %cyan
          1 0 1; %magenta
          1 1 0]; %yellow
-     
-TAILLENGTH = 40;
+         % add more rows id more than 8 trajectories 
 
 segID = [1:numseg]'; % '1' is close to head, 'end' is away from head
 alpha = flip(segID)/numseg;
 segment = round(TAILLENGTH*flip(alpha));
 
-k = 0;
+k = 0; % iteration counter
 
-for i=1:steps:LENTRAJ
+for i=1:steps:lenTraj
     k = k+1;
-    fprintf('percent complete %0.2f \n',100*i/LENTRAJ);
+    fprintf('percent complete %0.2f \n',100*i/lenTraj);
     delete(findobj(ax, 'Tag', 'head'));
     
     if k>TAILLENGTH+1
-        delete(ax.Children([TAILLENGTH*NUMTRAJ+1 : TAILLENGTH*NUMTRAJ+NUMTRAJ])); % delete end of tail
+        delete(ax.Children([TAILLENGTH*numTraj+1 : TAILLENGTH*numTraj+numTraj])); % delete end of tail
     end
     for j=1:segID(end)
         if k>segment(j)
-            for m = 1:NUMTRAJ
-                ax.Children(NUMTRAJ*segment(j)-(m-1)).Color = [color(m,:) alpha(j)];  
+            for m = 1:numTraj
+                ax.Children(numTraj*segment(j)-(m-1)).Color = [color(m,:) alpha(j)];  
             % ax.Children(2*segment(j)).Color = [0 0 0 alpha(j)]; % gray color
             % ax.Children(2*segment(j)-1).Color = [0 0 1 alpha(j)];% light blue color
             end
         end
     end
     
-    if i+steps > LENTRAJ
-        steps = LENTRAJ-i;
+    if i+steps > lenTraj
+        steps = lenTraj-i;
     end
     
-    for m=1:NUMTRAJ 
+    for m=1:numTraj 
         x = varargin{m}(1,i:i+steps);
         y = varargin{m}(2,i:i+steps);
         tagname = sprintf('%d,tail %d, traj %d',(2*k-1)+m-1,k,m);
